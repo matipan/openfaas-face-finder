@@ -1,0 +1,8 @@
+provider:
+  name: faas
+  gateway: https://gateway.ofc.matiaspan.me
+functions:
+  face-finder:
+    lang: gocv
+    handler: ./function
+    image: matipan/face-finder:latest
