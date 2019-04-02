@@ -271,43 +271,6 @@ func BoundingRect(contour []image.Point) image.Rectangle {
 	return rect
 }
 
-// BoxPoints finds the four vertices of a rotated rect. Useful to draw the rotated rectangle.
-//
-// For further Details, please see:
-// https://docs.opencv.org/3.3.0/d3/dc0/group__imgproc__shape.html#gaf78d467e024b4d7936cf9397185d2f5c
-//
-func BoxPoints(rect RotatedRect, pts *Mat) {
-
-	rPoints := toCPoints(rect.Contour)
-
-	rRect := C.struct_Rect{
-		x:      C.int(rect.BoundingRect.Min.X),
-		y:      C.int(rect.BoundingRect.Min.Y),
-		width:  C.int(rect.BoundingRect.Max.X - rect.BoundingRect.Min.X),
-		height: C.int(rect.BoundingRect.Max.Y - rect.BoundingRect.Min.Y),
-	}
-
-	rCenter := C.struct_Point{
-		x: C.int(rect.Center.X),
-		y: C.int(rect.Center.Y),
-	}
-
-	rSize := C.struct_Size{
-		width:  C.int(rect.Width),
-		height: C.int(rect.Height),
-	}
-
-	r := C.struct_RotatedRect{
-		pts:          rPoints,
-		boundingRect: rRect,
-		center:       rCenter,
-		size:         rSize,
-		angle:        C.double(rect.Angle),
-	}
-
-	C.BoxPoints(r, pts.p)
-}
-
 // ContourArea calculates a contour area.
 //
 // For further details, please see:
@@ -363,20 +326,6 @@ func MinAreaRect(points []image.Point) RotatedRect {
 	}
 }
 
-// MinEnclosingCircle finds a circle of the minimum area enclosing the input 2D point set.
-//
-// For further details, please see:
-// https://docs.opencv.org/3.4/d3/dc0/group__imgproc__shape.html#ga8ce13c24081bbc7151e9326f412190f1
-func MinEnclosingCircle(points []image.Point) (x, y, radius float32) {
-	cPoints := toCPoints(points)
-	cCenterPoint := C.struct_Point2f{}
-	var cRadius C.float
-	C.MinEnclosingCircle(cPoints, &cCenterPoint, &cRadius)
-	x, y = float32(cCenterPoint.x), float32(cCenterPoint.y)
-	radius = float32(cRadius)
-	return x, y, radius
-}
-
 // FindContours finds contours in a binary image.
 //
 // For further details, please see:
@@ -414,84 +363,6 @@ func FindContours(src Mat, mode RetrievalMode, method ContourApproximationMode) 
 	}
 
 	return contours
-}
-
-//ConnectedComponentsAlgorithmType specifies the type for ConnectedComponents
-type ConnectedComponentsAlgorithmType int
-
-const (
-	// SAUF algorithm for 8-way connectivity, SAUF algorithm for 4-way connectivity.
-	CCL_WU ConnectedComponentsAlgorithmType = 0
-
-	// BBDT algorithm for 8-way connectivity, SAUF algorithm for 4-way connectivity.
-	CCL_DEFAULT = 1
-
-	// BBDT algorithm for 8-way connectivity, SAUF algorithm for 4-way connectivity
-	CCL_GRANA = 2
-)
-
-// ConnectedComponents computes the connected components labeled image of boolean image.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaedef8c7340499ca391d459122e51bef5
-//
-func ConnectedComponents(src Mat, labels *Mat) int {
-	return int(C.ConnectedComponents(src.p, labels.p, C.int(8), C.int(MatTypeCV32S), C.int(CCL_DEFAULT)))
-}
-
-// ConnectedComponents computes the connected components labeled image of boolean image.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#gaedef8c7340499ca391d459122e51bef5
-//
-func ConnectedComponentsWithParams(src Mat, labels *Mat, conn int, ltype MatType,
-	ccltype ConnectedComponentsAlgorithmType) int {
-	return int(C.ConnectedComponents(src.p, labels.p, C.int(conn), C.int(ltype), C.int(ccltype)))
-}
-
-// ConnectedComponentsTypes are the connected components algorithm output formats
-type ConnectedComponentsTypes int
-
-const (
-	//The leftmost (x) coordinate which is the inclusive start of the bounding box in the horizontal direction.
-	CC_STAT_LEFT = 0
-
-	//The topmost (y) coordinate which is the inclusive start of the bounding box in the vertical direction.
-	CC_STAT_TOP = 1
-
-	// The horizontal size of the bounding box.
-	CC_STAT_WIDTH = 2
-
-	// The vertical size of the bounding box.
-	CC_STAT_HEIGHT = 3
-
-	// The total area (in pixels) of the connected component.
-	CC_STAT_AREA = 4
-
-	CC_STAT_MAX = 5
-)
-
-// ConnectedComponentsWithStats computes the connected components labeled image of boolean
-// image and also produces a statistics output for each label.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga107a78bf7cd25dec05fb4dfc5c9e765f
-//
-func ConnectedComponentsWithStats(src Mat, labels *Mat, stats *Mat, centroids *Mat) int {
-	return int(C.ConnectedComponentsWithStats(src.p, labels.p, stats.p, centroids.p,
-		C.int(8), C.int(MatTypeCV32S), C.int(CCL_DEFAULT)))
-}
-
-// ConnectedComponentsWithStats computes the connected components labeled image of boolean
-// image and also produces a statistics output for each label.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d3/dc0/group__imgproc__shape.html#ga107a78bf7cd25dec05fb4dfc5c9e765f
-//
-func ConnectedComponentsWithStatsWithParams(src Mat, labels *Mat, stats *Mat, centroids *Mat,
-	conn int, ltype MatType, ccltype ConnectedComponentsAlgorithmType) int {
-	return int(C.ConnectedComponentsWithStats(src.p, labels.p, stats.p, centroids.p, C.int(conn),
-		C.int(ltype), C.int(ccltype)))
 }
 
 // TemplateMatchMode is the type of the template matching operation.
@@ -676,9 +547,6 @@ const (
 
 	// BorderDefault border type
 	BorderDefault = BorderReflect101
-
-	// BorderIsolated border type
-	BorderIsolated = 16
 )
 
 // GaussianBlur blurs an image Mat using a Gaussian filter.
@@ -854,21 +722,6 @@ func HoughLinesP(src Mat, lines *Mat, rho float32, theta float32, threshold int)
 }
 func HoughLinesPWithParams(src Mat, lines *Mat, rho float32, theta float32, threshold int, minLineLength float32, maxLineGap float32) {
 	C.HoughLinesPWithParams(src.p, lines.p, C.double(rho), C.double(theta), C.int(threshold), C.double(minLineLength), C.double(maxLineGap))
-}
-
-// HoughLinesPointSet implements the Hough transform algorithm for line
-// detection on a set of points. For a good explanation of Hough transform, see:
-// http://homepages.inf.ed.ac.uk/rbf/HIPR2/hough.htm
-//
-// For further details, please see:
-// https://docs.opencv.org/master/dd/d1a/group__imgproc__feature.html#ga2858ef61b4e47d1919facac2152a160e
-//
-func HoughLinesPointSet(points Mat, lines *Mat, linesMax int, threshold int,
-	minRho float32, maxRho float32, rhoStep float32,
-	minTheta float32, maxTheta float32, thetaStep float32) {
-	C.HoughLinesPointSet(points.p, lines.p, C.int(linesMax), C.int(threshold),
-		C.double(minRho), C.double(maxRho), C.double(rhoStep),
-		C.double(minTheta), C.double(maxTheta), C.double(thetaStep))
 }
 
 // ThresholdType type of threshold operation.
@@ -1438,48 +1291,4 @@ const (
 func FitLine(pts []image.Point, line *Mat, distType DistanceTypes, param, reps, aeps float64) {
 	cPoints := toCPoints(pts)
 	C.FitLine(cPoints, line.p, C.int(distType), C.double(param), C.double(reps), C.double(aeps))
-}
-
-// CLAHE is a wrapper around the cv::CLAHE algorithm.
-type CLAHE struct {
-	// C.CLAHE
-	p unsafe.Pointer
-}
-
-// NewCLAHE returns a new CLAHE algorithm
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d6/db6/classcv_1_1CLAHE.html
-//
-func NewCLAHE() CLAHE {
-	return CLAHE{p: unsafe.Pointer(C.CLAHE_Create())}
-}
-
-// NewCLAHEWithParams returns a new CLAHE algorithm
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d6/db6/classcv_1_1CLAHE.html
-//
-func NewCLAHEWithParams(clipLimit float64, tileGridSize image.Point) CLAHE {
-	pSize := C.struct_Size{
-		width:  C.int(tileGridSize.X),
-		height: C.int(tileGridSize.Y),
-	}
-	return CLAHE{p: unsafe.Pointer(C.CLAHE_CreateWithParams(C.double(clipLimit), pSize))}
-}
-
-// Close CLAHE.
-func (c *CLAHE) Close() error {
-	C.CLAHE_Close((C.CLAHE)(c.p))
-	c.p = nil
-	return nil
-}
-
-// Apply CLAHE.
-//
-// For further details, please see:
-// https://docs.opencv.org/master/d6/db6/classcv_1_1CLAHE.html#a4e92e0e427de21be8d1fae8dcd862c5e
-//
-func (c *CLAHE) Apply(src Mat, dst *Mat) {
-	C.CLAHE_Apply((C.CLAHE)(c.p), src.p, dst.p)
 }

@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:585a600255042d1bbf97a5bef9f7c23626d85a6b0d649df94cac4afb99e0bccc"
+  digest = "1:7c74aa84445a23e60635357a67727585fa183c7c6b6119a9c778e0a65481a63a"
   name = "gocv.io/x/gocv"
   packages = ["."]
   pruneopts = "UT"
-  revision = "a897c364055ad1328c2162830747da556a8a9aa2"
-  version = "v0.19.0"
+  revision = "2ec65a33d136d139ab177b078e67e1ac9988db6d"
+  version = "v0.18.0"
 
 [solve-meta]
   analyzer-name = "dep"

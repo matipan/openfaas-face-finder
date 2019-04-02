@@ -1,7 +1,7 @@
 #!/bin/bash
 set -eux -o pipefail
 
-OPENCV_VERSION=${OPENCV_VERSION:-4.0.1}
+OPENCV_VERSION=${OPENCV_VERSION:-4.0.0}
 
 #GRAPHICAL=ON
 GRAPHICAL=${GRAPHICAL:-OFF}
@@ -51,7 +51,6 @@ cmake -D WITH_IPP=${GRAPHICAL} \
       -D BUILD_opencv_python3=OFF \
       -D OPENCV_GENERATE_PKGCONFIG=ON \
       -D CMAKE_INSTALL_PREFIX=$HOME/usr \
-      -D OPENCV_ENABLE_NONFREE=ON \
       -D OPENCV_EXTRA_MODULES_PATH=../../opencv_contrib-${OPENCV_VERSION}/modules ..
 make -j8
 make install && touch $HOME/usr/installed-${OPENCV_VERSION}

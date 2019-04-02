@@ -150,13 +150,6 @@ struct Rect BoundingRect(Contour con) {
     return r;
 }
 
-void BoxPoints(RotatedRect rect, Mat boxPts){
-    cv::Point2f centerPt(rect.center.x , rect.center.y);
-    cv::Size2f rSize(rect.size.width, rect.size.height);
-    cv::RotatedRect rotatedRectangle(centerPt, rSize, rect.angle);
-     cv::boxPoints(rotatedRectangle, *boxPts);
-}
-
 double ContourArea(Contour con) {
     std::vector<cv::Point> pts;
 
@@ -196,19 +189,6 @@ struct RotatedRect MinAreaRect(Points points){
     return retrect;
 }
 
-void MinEnclosingCircle(Points points, Point2f* center, float* radius){
-    std::vector<cv::Point> pts;
-
-    for (size_t i = 0; i < points.length; i++) {
-        pts.push_back(cv::Point(points.points[i].x, points.points[i].y));
-    }
-
-    cv::Point2f center2f;
-    cv::minEnclosingCircle(pts, center2f, *radius);
-    center->x = center2f.x;
-    center->y = center2f.y;
-}
-
 struct Contours FindContours(Mat src, int mode, int method) {
     std::vector<std::vector<cv::Point> > contours;
     cv::findContours(*src, contours, mode, method);
@@ -228,16 +208,6 @@ struct Contours FindContours(Mat src, int mode, int method) {
 
     Contours cons = {points, (int)contours.size()};
     return cons;
-}
-
-int ConnectedComponents(Mat src, Mat labels, int connectivity, int ltype, int ccltype){
-    return cv::connectedComponents(*src, *labels, connectivity, ltype, ccltype);
-}
-
-
-int ConnectedComponentsWithStats(Mat src, Mat labels, Mat stats, Mat centroids,
-    int connectivity, int ltype, int ccltype){
-    return cv::connectedComponentsWithStats(*src, *labels, *stats, *centroids, connectivity, ltype, ccltype);
 }
 
 Mat GetStructuringElement(int shape, Size ksize) {
@@ -301,13 +271,6 @@ void HoughLinesP(Mat src, Mat lines, double rho, double theta, int threshold) {
 
 void HoughLinesPWithParams(Mat src, Mat lines, double rho, double theta, int threshold, double minLineLength, double maxLineGap) {
     cv::HoughLinesP(*src, *lines, rho, theta, threshold, minLineLength, maxLineGap);
-}
-
-void HoughLinesPointSet(Mat points, Mat lines, int linesMax, int threshold,
-                        double minRho, double  maxRho, double rhoStep,
-                        double minTheta, double maxTheta, double thetaStep) {
-    cv::HoughLinesPointSet(*points, *lines, linesMax, threshold,
-                           minRho, maxRho, rhoStep, minTheta, maxTheta, thetaStep );
 }
 
 void Threshold(Mat src, Mat dst, double thresh, double maxvalue, int typ) {
@@ -501,21 +464,4 @@ void FitLine(Contour points, Mat line, int distType, double param, double reps, 
 		pts.push_back(cv::Point(points.points[i].x, points.points[i].y));
 	}
 	cv::fitLine(pts, *line, distType, param, reps, aeps);
-}
-
-CLAHE CLAHE_Create() {
-    return new cv::Ptr<cv::CLAHE>(cv::createCLAHE());
-}
-
-CLAHE CLAHE_CreateWithParams(double clipLimit, Size tileGridSize) {
-    cv::Size sz(tileGridSize.width, tileGridSize.height);
-    return new cv::Ptr<cv::CLAHE>(cv::createCLAHE(clipLimit, sz));
-}
-
-void CLAHE_Close(CLAHE c) {
-    delete c;
-}
-
-void CLAHE_Apply(CLAHE c, Mat src, Mat dst) {
-    (*c)->apply(*src, *dst);
 }
